@@ -1,0 +1,112 @@
+package com.core.hello;
+import java.util.*;
+class Main{
+    static class Point{
+        int x, y;
+        public Point(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
+    }
+    static int n, q;
+    static int max = Integer.MIN_VALUE;
+    static boolean[][] visit;
+    static int size;
+    static int[][] arr;
+    static int[][] temp;
+    static int dir[][] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    static Queue<Integer> magic = new LinkedList<>();
+    static Queue<Point> queue = new LinkedList<>();
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        n = scan.nextInt();
+        q = scan.nextInt();
+        size = (int) Math.pow(2,n);
+        arr = new int[size][size];
+        temp = new int[size][size];
+        visit = new boolean[size][size];
+        for(int i = 0; i < size; i++)
+            for(int j = 0; j < size; j++)
+                arr[i][j] = scan.nextInt();
+        for(int i = 0; i < q; i++)
+            magic.offer(scan.nextInt());
+        while(q--> 0){
+            int now = magic.poll();
+            int num = (int)Math.pow(2, now);
+            for(int i = 0; i < size; i += num){
+                for(int j = 0; j < size; j += num){
+                    rotate(i, j, num);
+                    melt();
+                }
+            }
+        }
+        int total = 0;
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
+                if(!visit[i][j]){
+                    max = Math.max(max,bfs(i, j));
+                }
+                total += arr[i][j];
+            }
+        }
+        System.out.println(total);
+        System.out.println(max);
+    }
+    static void rotate(int x, int y, int t){
+        for(int i = x; i < x + t; i++){
+            for(int j = y; j < y + t; j++){
+                temp[j][size - i - 1] = arr[i][j];
+            }
+        }
+        for(int i = x; i < x + t; i++)
+            for(int j = y; j < y + t; j++)
+                arr[i][j] = temp[i][j];
+    }
+    static void melt(){
+        temp = new int[size][size];
+        int cnt;
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
+                cnt = 0;
+                for(int t = 0; t < 4; t++){
+                    int nx = i + dir[t][0];
+                    int ny = j + dir[t][1];
+                    if(nx < 0 || ny < 0 || nx >= size || ny >= size)
+                        continue;
+                    if(arr[nx][ny] == 0)
+                        continue;
+                    cnt++;
+                }
+                if(cnt < 3){
+                    temp[i][j] = 1;
+                }
+            }
+        }
+        for(int i = 0; i < size; i++)
+            for(int j = 0; j < size; j++)
+                arr[i][j] -= temp[i][j];
+    }
+    static int bfs(int x, int y){
+        visit[x][y] = true;
+        int t = 0;
+        queue = new LinkedList<>();
+        queue.offer(new Point(x, y));
+        while (!queue.isEmpty()) {
+            Point now = queue.poll();
+            for(int i = 0; i < 4; i++){
+                int nx = now.x + dir[i][0];
+                int ny = now.y + dir[i][1];
+                if(nx < 0 || ny < 0 || nx >= size || ny >= size)
+                    continue;
+                if(visit[nx][ny])
+                    continue;
+                if(arr[nx][ny] == 0)
+                    continue;
+                queue.offer(new Point(nx,ny));
+                visit[nx][ny] = true;
+                t += 1;
+            }
+        }
+        return t;
+    }
+}
